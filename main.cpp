@@ -19,6 +19,7 @@ int main(int argc, char* argv[])
     }
 
     char radarStartCmd[256];
+
     // using third-party ads-b decoder
     // send SBS formated data on specific port 
     strcpy(radarStartCmd, "../dump1090-original/dump1090 --metric --net-sbs-port ");
