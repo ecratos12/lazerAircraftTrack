@@ -52,6 +52,7 @@ int main(int argc, char* argv[])
 
       ss.write(buf.data(), len);
       search_service.read(ss);
+      //sample diff to commit
     }
     
   }
