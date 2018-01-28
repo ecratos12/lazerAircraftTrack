@@ -1,3 +1,6 @@
+#ifndef SEARCH_SERVICE_H
+#define SEARCH_SERVICE_H
+
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 #include <boost/date_time.hpp>
@@ -8,9 +11,6 @@
 #include <utility>
 #include <string>
 
-
-
-//#include <boost/geometry.hpp>
 
 //class SBS1_message
 //{
@@ -54,6 +54,7 @@
 //    }
 //};
 
+
 struct SBS1_message
 {
     std::vector<std::string> params;
@@ -72,9 +73,13 @@ class SearchService: boost::noncopyable
         void stopTracking();
         void read(std::stringstream&);
 
+        std::map<int, SBS1_message> getCache();
+
     private:
         boost::asio::io_service service;
         boost::asio::deadline_timer t;
-        std::map<int, SBS1_message> data;
-        bool resetData();
+        std::map<int, SBS1_message> cache;
+        bool cleanupCache();
 };
+
+#endif // SEARCH_SERVICE_H

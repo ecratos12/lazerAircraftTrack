@@ -4,6 +4,7 @@
 //#include <fstream>
 //#include <sstream>
 #include "SearchService.h"
+#include "Radar.h"
 
 using namespace boost::asio;
 
@@ -22,7 +23,7 @@ int main(int argc, char* argv[])
 
     // using third-party ads-b decoder
     // send SBS formated data on specific port 
-    strcpy(radarStartCmd, "../dump1090-original/dump1090 --metric --net-sbs-port ");
+    strcpy(radarStartCmd, "../dump1090-original/dump1090 --metric --raw --net-sbs-port ");
     strcat(radarStartCmd, argv[2]);
     system(radarStartCmd);
 
@@ -34,25 +35,26 @@ int main(int argc, char* argv[])
     SearchService search_service(service);
     search_service.startTracking();
 
+    Radar radar(service);
+    radar.connectToSearchService(search_service);
+
     for (;;)
     {
       service.run();
       // this buffer prevents self-overflow
       boost::array<char, 128> buf;
       boost::system::error_code ec;
-      std::stringstream ss;
 
       size_t len = sock.read_some(boost::asio::buffer(buf), ec);
-      std::cout << "dasfsdasgsaasfsfdfasfas" << std::endl;
       
       if (ec == boost::asio::error::eof)
         break;
       else if (ec)
         throw boost::system::system_error(ec);
 
+      std::stringstream ss;
       ss.write(buf.data(), len);
       search_service.read(ss);
-      //sample diff to commit
     }
     
   }
@@ -63,4 +65,5 @@ int main(int argc, char* argv[])
   }
 
   return 0;
+
 }

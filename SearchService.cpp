@@ -1,18 +1,13 @@
 #include "SearchService.h"
 
-//static const double STATION_LAT = 50.0;
-//static const double STATION_LON = 30.0;
-
-const int AIRCRAFT_DATA_EXPIRATION_DELAY = 30;
+#define AIRCRAFT_DATA_EXPIRATION_DELAY_SEC  30
 
 SearchService::SearchService(boost::asio::io_service &io_service)
     : t(io_service)
 {}
 
 SearchService::~SearchService()
-{
-
-}
+{}
 
 void SearchService::startTracking()
 {
@@ -32,28 +27,33 @@ void SearchService::read(std::stringstream &ss)
     while (std::getline(ss, param, ','))
     {
         msg.params.push_back(param);
-        std::cout << param.c_str() << std::endl;
+//        std::cout << param.c_str() << std::endl;
     }
     int aircraftId = std::stoi(msg.params[3]);
 
     if (msg.isValid())
     {
-        // see std::map::insert docs. Insert only with a new unique key.
-        std::pair<std::map<int, SBS1_message>::iterator,bool> ret = data.insert(std::pair<int, SBS1_message>(aircraftId, msg));
+        // Insert only with a new unique key.
+        // One message per aircraft
+        std::pair<std::map<int, SBS1_message>::iterator,bool> ret = cache.insert(std::pair<int, SBS1_message>(aircraftId, msg));
         if (ret.second==false)
         {
-            data.erase(aircraftId);
-            data.insert(std::pair<int, SBS1_message>(aircraftId, msg));
+            cache.erase(aircraftId);
+            cache.insert(std::pair<int, SBS1_message>(aircraftId, msg));
         }
     }
 }
 
-bool SearchService::resetData()
+std::map<int, SBS1_message> SearchService::getCache()
+{
+    return cache;
+}
+
+bool SearchService::cleanupCache()
 {
     std::map<int, SBS1_message> new_data;
-    std::map<int, SBS1_message>::iterator it = data.begin();
-    while (it != data.end())
-    {
+    std::map<int, SBS1_message>::iterator it = cache.begin();
+    do {
         int aircrft_id = it->first;
         SBS1_message msg = it->second;
 
@@ -62,14 +62,14 @@ bool SearchService::resetData()
         boost::posix_time::ptime time_msg_gen = boost::posix_time::time_from_string(msg_dt_str);
         boost::posix_time::time_duration td = boost::posix_time::microsec_clock::local_time() - time_msg_gen;
 
-        // add non-expired messages to new data
-        if (td < boost::posix_time::seconds(AIRCRAFT_DATA_EXPIRATION_DELAY))
+        // add non-expired message to new data
+        if (td < boost::posix_time::seconds(AIRCRAFT_DATA_EXPIRATION_DELAY_SEC))
             new_data.insert(std::pair<int, SBS1_message>(aircrft_id, msg));
-        it++;
-    }
-    new_data = data;
+    } while (it++ != cache.end());
 
-    t.expires_from_now(boost::posix_time::seconds(AIRCRAFT_DATA_EXPIRATION_DELAY/2));
-    t.async_wait(boost::bind(&SearchService::resetData, this));
+    cache = new_data;
+
+    t.expires_from_now(boost::posix_time::seconds(AIRCRAFT_DATA_EXPIRATION_DELAY_SEC/2));
+    t.async_wait(boost::bind(&SearchService::cleanupCache, this));
     service.run();
 }
