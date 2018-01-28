@@ -80,7 +80,7 @@ ACData Radar::convertRawMessage(SBS1_message &msg)
     data_from_msg.heightGrad = RAD_TO_GRAD(atan(tgH));
     data_from_msg.distanceMeters = (R + alt)*(lon - LOCAL_LON)*cos(lat)*sqrt((1 + tgA*tgA)*(1 + tgH*tgH)) / tgA;
 
-    std::cout << "GAAAAYYYYY A: " << data_from_msg.azimuthGrad << " , H: " << data_from_msg.heightGrad << std::endl;
+    std::cout << "LOGS: A: " << data_from_msg.azimuthGrad << " , H: " << data_from_msg.heightGrad << std::endl;
 
     return data_from_msg;
 }
