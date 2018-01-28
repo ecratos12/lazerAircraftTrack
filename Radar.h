@@ -3,7 +3,7 @@
 
 #include "SearchService.h"
 
-// Aircraft radar data.
+// Aircraft radar data
 struct ACData
 {
         double azimuthGrad;

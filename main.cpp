@@ -3,6 +3,9 @@
 //#include <boost/asio.hpp>
 //#include <fstream>
 //#include <sstream>
+
+#include<boost/thread.hpp>
+
 #include "SearchService.h"
 #include "Radar.h"
 
@@ -20,17 +23,28 @@ int main(int argc, char* argv[])
     }
 
     char radarStartCmd[256];
+    std::cout << "BEFORE DUMP1090" << std::endl;
 
     // using third-party ads-b decoder
-    // send SBS formated data on specific port 
-    strcpy(radarStartCmd, "../dump1090-original/dump1090 --metric --raw --net-sbs-port ");
+    // send SBS formated data on specific port
+#ifdef _WIN32
+    strcpy(radarStartCmd, "start ");  // run in background
+#endif
+    strcpy(radarStartCmd, "../dump1090-original/dump1090 --metric --raw --net --net-sbs-port ");
     strcat(radarStartCmd, argv[2]);
+#ifdef __linux__
+    strcat(radarStartCmd, " & >/dev/null 2>&1"); // silently run in background
+#endif
     system(radarStartCmd);
+    sleep(2); // Decoder initialization
 
     io_service service;
+
     ip::tcp::endpoint ep(ip::address::from_string(argv[1]), atoi(argv[2]));
     ip::tcp::socket sock(service);
-    boost::asio::connect(sock, &ep);
+    sock.open(ep.protocol());
+    sock.set_option(ip::tcp::socket::reuse_address(true));
+    sock.connect(ep);
 
     SearchService search_service(service);
     search_service.startTracking();
@@ -40,23 +54,23 @@ int main(int argc, char* argv[])
 
     for (;;)
     {
-      service.run();
-      // this buffer prevents self-overflow
-      boost::array<char, 128> buf;
-      boost::system::error_code ec;
+        std::cout << "AFTER DUMP1090" << std::endl;
+        // this buffer prevents self-overflow
+        boost::array<char, 128> buf;
+        boost::system::error_code ec;
 
-      size_t len = sock.read_some(boost::asio::buffer(buf), ec);
-      
-      if (ec == boost::asio::error::eof)
-        break;
-      else if (ec)
-        throw boost::system::system_error(ec);
+        size_t len = sock.read_some(boost::asio::buffer(buf), ec);
 
-      std::stringstream ss;
-      ss.write(buf.data(), len);
-      search_service.read(ss);
+        if (ec == boost::asio::error::eof)
+            break;
+        else if (ec)
+            throw boost::system::system_error(ec);
+
+        std::stringstream ss;
+        ss.write(buf.data(), len);
+        std::cout << "AFTER READ_SOME" << std::endl;
+        search_service.read(ss);
     }
-    
   }
   // handle any exceptions that may have been thrown.
   catch (std::exception& e)
