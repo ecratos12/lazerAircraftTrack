@@ -18,7 +18,7 @@ class Radar : public boost::noncopyable
         Radar(boost::asio::io_service&);
         ~Radar();
 
-        void connectToSearchService(SearchService&);
+        void start();
         void stop();
 
         ACData convertRawMessage(SBS1_message&);

@@ -45,16 +45,8 @@ Radar::Radar(boost::asio::io_service &service)
 Radar::~Radar()
 {}
 
-void Radar::connectToSearchService(SearchService &searchService)
+void Radar::start()
 {
-    t.expires_from_now(boost::posix_time::seconds(RADAR_UPDATE_DELAY_SEC));
-//    t.async_wait(boost::bind(&Radar::readAllCache, this, _1)(searchService));
-    t.async_wait([&](const boost::system::error_code& error) {
-        if (!error) {
-            readAllCache(searchService);
-        }
-    });
-
     io_service.run();
 }
 
@@ -92,6 +84,11 @@ void Radar::readAllCache(SearchService &service)
         int aircrft_id = it->first;
         ACData aircrft_info = convertRawMessage(it->second);
 
+        std::cout << aircrft_id << "  " <<
+                     aircrft_info.azimuthGrad << "  " <<
+                     aircrft_info.heightGrad << "  " <<
+                     aircrft_info.distanceMeters << std::endl;
+
         std::pair<std::map<int, ACData>::iterator,bool> ret = cache.insert(std::pair<int, ACData>(aircrft_id, aircrft_info));
         if (ret.second==false) {
             cache.erase(aircrft_id);
@@ -100,6 +97,13 @@ void Radar::readAllCache(SearchService &service)
 
     } while (it++ != service.getCache().end());
 
+    t.expires_from_now(boost::posix_time::seconds(RADAR_UPDATE_DELAY_SEC));
+//    t.async_wait(boost::bind(&Radar::readAllCache, this, _1)(searchService));
+    t.async_wait([&](const boost::system::error_code& error) {
+        if (!error) {
+            readAllCache(service);
+        }
+    });
 }
 
 

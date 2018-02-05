@@ -1,4 +1,5 @@
 #include "SearchService.h"
+#include <ctime>
 
 #define AIRCRAFT_DATA_EXPIRATION_DELAY_SEC  30
 
@@ -24,15 +25,25 @@ void SearchService::read(std::stringstream &ss)
 {
     std::string param;
     SBS1_message msg;
-    while (std::getline(ss, param, ','))
-    {
+    while (std::getline(ss, param, ',')) {
         msg.params.push_back(param);
-//        std::cout << param.c_str() << std::endl;
     }
-    int aircraftId = std::stoi(msg.params[3]);
+    int aircraftId = (int)strtol(msg.params[3].c_str(), NULL, 16);
 
     if (msg.isValid())
     {
+        if (msg.params[6]!="" && msg.params[7]!="") {
+            time_t rtime;
+            time(&rtime);
+            struct tm * timeinfo;
+            timeinfo = localtime(&rtime);
+
+            char buf[64];
+            strftime(buf, sizeof(buf), "%Y/%m/%d", timeinfo);
+            msg.params[6] += std::string(buf);
+            strftime(buf, sizeof(buf), "%H/%M/%S", timeinfo);
+            msg.params[7] += std::string(buf);
+        }
         // Insert only with a new unique key.
         // One message per aircraft
         std::pair<std::map<int, SBS1_message>::iterator,bool> ret = cache.insert(std::pair<int, SBS1_message>(aircraftId, msg));

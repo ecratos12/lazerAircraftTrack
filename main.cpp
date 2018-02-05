@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
     search_service.startTracking();
 
     Radar radar(service);
-    radar.connectToSearchService(search_service);
+    radar.start();
 
     for (;;)
     {
@@ -71,11 +71,12 @@ int main(int argc, char* argv[])
         std::cout << "AFTER READ_SOME" << std::endl;
         search_service.read(ss);
     }
+    sock.close();
   }
   // handle any exceptions that may have been thrown.
   catch (std::exception& e)
   {
-    std::cerr << e.what() << std::endl;
+    std::cerr << "Terminated by error : " << e.what() << std::endl;
   }
 
   return 0;

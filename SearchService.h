@@ -59,7 +59,7 @@ struct SBS1_message
 {
     std::vector<std::string> params;
     bool isValid(){
-        return (params[3]!="" && params[6]!="" && params[7]!="" && params[11]!="" && params[14]!="" && params[15]!="");
+        return (params[3]!="" /*&& params[6]!="" && params[7]!=""*/ && params[11]!="" && params[14]!="" && params[15]!="");
     }
 };
 
