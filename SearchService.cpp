@@ -27,7 +27,9 @@ void SearchService::read(std::stringstream &ss)
     SBS1_message msg;
     while (std::getline(ss, param, ',')) {
         msg.params.push_back(param);
+        std::cout << param << ", ";
     }
+    std::cout << std::endl;
     int aircraftId = (int)strtol(msg.params[3].c_str(), NULL, 16);
 
     if (msg.isValid())

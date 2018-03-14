@@ -4,8 +4,6 @@
 //#include <fstream>
 //#include <sstream>
 
-#include<boost/thread.hpp>
-
 #include "SearchService.h"
 #include "Radar.h"
 
@@ -23,7 +21,6 @@ int main(int argc, char* argv[])
     }
 
     char radarStartCmd[256];
-    std::cout << "BEFORE DUMP1090" << std::endl;
 
     // using third-party ads-b decoder
     // send SBS formated data on specific port
@@ -54,7 +51,6 @@ int main(int argc, char* argv[])
 
     for (;;)
     {
-        std::cout << "AFTER DUMP1090" << std::endl;
         // this buffer prevents self-overflow
         boost::array<char, 128> buf;
         boost::system::error_code ec;
@@ -71,6 +67,7 @@ int main(int argc, char* argv[])
         std::cout << "AFTER READ_SOME" << std::endl;
         search_service.read(ss);
     }
+    std::cout << "Closing connection" << std::endl;
     sock.close();
   }
   // handle any exceptions that may have been thrown.
