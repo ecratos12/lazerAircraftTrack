@@ -11,4 +11,4 @@ https://github.com/ecratos12/dump1090
 
 ## Usage
 
-`binary-name <server> <port>`
+`bin/binary-name <server> <port>`
