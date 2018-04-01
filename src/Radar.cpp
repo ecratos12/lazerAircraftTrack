@@ -1,7 +1,7 @@
 #include "Radar.h"
 
 #define _USE_MATH_DEFINES
-#include <math.h>
+#include <cmath>
 
 #define RADAR_UPDATE_DELAY_SEC  2
 
@@ -42,12 +42,12 @@ Radar::Radar(boost::asio::io_service &service)
     :t(service)
 {}
 
-Radar::~Radar()
-{}
+Radar::~Radar() = default;
 
-void Radar::start()
+void Radar::attach(SearchService &service)
 {
     io_service.run();
+    readAllCache(service);
 }
 
 void Radar::stop()
@@ -56,43 +56,44 @@ void Radar::stop()
     t.cancel();
 }
 
-ACData Radar::convertRawMessage(SBS1_message &msg)
+ACPoint Radar::convertRawMessage(SBS1_message &msg)
 {
     double lat = GRAD_TO_RAD(std::stod(msg.params[14]));
     double lon = GRAD_TO_RAD(std::stod(msg.params[15]));
     double alt = std::stod(msg.params[11]);
 
-    ACData data_from_msg;
+    ACPoint data_from_msg{};
     data_from_msg.grSpeedKmPH = std::stod(msg.params[12]);
-    data_from_msg.azimuthGrad = RAD_TO_GRAD(atan2(  (lon - LOCAL_LON)*cos(lat) ,
+    data_from_msg.azGrad = RAD_TO_GRAD(atan2(  (lon - LOCAL_LON)*cos(lat) ,
                                                     (lat - LOCAL_LAT) + (lon - LOCAL_LON)*(lon - LOCAL_LON)*sin(LOCAL_LAT)*cos(lat)/2
                                             ));
     double tgH = tanH(msg);
     double tgA = tanA(msg);
-    data_from_msg.heightGrad = RAD_TO_GRAD(atan(tgH));
+    data_from_msg.elGrad = RAD_TO_GRAD(atan(tgH));
     data_from_msg.distanceMeters = (R + alt)*(lon - LOCAL_LON)*cos(lat)*sqrt((1 + tgA*tgA)*(1 + tgH*tgH)) / tgA;
 
-    std::cout << "LOGS: A: " << data_from_msg.azimuthGrad << " , H: " << data_from_msg.heightGrad << std::endl;
+    std::cout << "LOGS: A: " << data_from_msg.azGrad << " , H: " << data_from_msg.elGrad << std::endl;
 
     return data_from_msg;
 }
 
 void Radar::readAllCache(SearchService &service)
 {
-    std::map<int, SBS1_message>::iterator it = service.getCache().begin();
+    auto it = service.getCache().begin();
     do {
         int aircrft_id = it->first;
-        ACData aircrft_info = convertRawMessage(it->second);
+        ACPoint aircrft_info = convertRawMessage(it->second);
 
         std::cout << aircrft_id << "  " <<
-                     aircrft_info.azimuthGrad << "  " <<
-                     aircrft_info.heightGrad << "  " <<
+                     aircrft_info.azGrad << "  " <<
+                     aircrft_info.elGrad << "  " <<
                      aircrft_info.distanceMeters << std::endl;
 
-        std::pair<std::map<int, ACData>::iterator,bool> ret = cache.insert(std::pair<int, ACData>(aircrft_id, aircrft_info));
+        std::pair<ACMap::iterator,bool>
+                ret = cache.emplace(aircrft_id, aircrft_info);
         if (!ret.second) {
             cache.erase(aircrft_id);
-            cache.insert(std::pair<int, ACData>(aircrft_id, aircrft_info));
+            cache.emplace(aircrft_id, aircrft_info);
         }
 
     } while (it++ != service.getCache().end());

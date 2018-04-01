@@ -1,0 +1,14 @@
+      STATION : << GAO_NANU >> , SATELLITE : <<geoik2  >>
+           TIME  STEP =   1 sec , MIN  ELEVATION  = 20 deg
+               ALL  DAY  AND  NIGHT  PASSES
+               PERIOD  25  MAR  2018 - 30  MAR  2018
+ 
+     date        h  m  s    h  m  s    max_H        filename 
+ 25 MAR 2018    4  1  3 -  4  8 20       39     D:\EPHEM\GE203250.GAO
+ 25 MAR 2018    5 43 34 -  5 51  0       42     D:\EPHEM\GE203251.GAO
+ 25 MAR 2018   14  4 23 - 14  9 47       28     D:\EPHEM\GE203252.GAO
+ 25 MAR 2018   15 45  2 - 15 53 27       64     D:\EPHEM\GE203253.GAO
+ 26 MAR 2018    4 16  0 -  4 24  0       50     D:\EPHEM\GE203260.GAO
+ 26 MAR 2018    5 59  5 -  6  5 40       34     D:\EPHEM\GE203261.GAO
+ 26 MAR 2018   14 18 50 - 14 25 27       34     D:\EPHEM\GE203262.GAO
+ 26 MAR 2018   16  0 31 - 16  8 30       50     D:\EPHEM\GE203263.GAO

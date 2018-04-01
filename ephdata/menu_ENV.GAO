@@ -1,0 +1,14 @@
+      STATION : << GAO_NANU >> , SATELLITE : <<ENVISAT >>
+           TIME  STEP =   1 sec , MIN  ELEVATION  = 20 deg
+               ALL  DAY  AND  NIGHT  PASSES
+               PERIOD  25  MAR  2018 - 30  MAR  2018
+ 
+     date        h  m  s    h  m  s    max_H        filename 
+ 25 MAR 2018    6 11 13 -  6 18 10       61     D:\EPHEM\ENV03250.GAO
+ 25 MAR 2018    7 51 40 -  7 55  1       23     D:\EPHEM\ENV03251.GAO
+ 25 MAR 2018   15 54  2 - 15 56 47       22     D:\EPHEM\ENV03252.GAO
+ 25 MAR 2018   17 30 30 - 17 37 32       65     D:\EPHEM\ENV03253.GAO
+ 26 MAR 2018    5 35 11 -  5 40 19       30     D:\EPHEM\ENV03260.GAO
+ 26 MAR 2018    7 13 47 -  7 20  3       43     D:\EPHEM\ENV03261.GAO
+ 26 MAR 2018   16 53 48 - 17  0 47       64     D:\EPHEM\ENV03262.GAO
+ 26 MAR 2018   18 36  2 - 18 37 30       20     D:\EPHEM\ENV03263.GAO

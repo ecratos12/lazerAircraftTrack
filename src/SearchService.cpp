@@ -38,6 +38,7 @@ void SearchService::read(std::stringstream &ss)
             time_t rtime;
             time(&rtime);
             struct tm * timeinfo;
+            // time when readed
             timeinfo = localtime(&rtime);
 
             char buf[64];
@@ -48,24 +49,25 @@ void SearchService::read(std::stringstream &ss)
         }
         // Insert only with a new unique key.
         // One message per aircraft
-        std::pair<std::map<int, SBS1_message>::iterator,bool> ret = cache.insert(std::pair<int, SBS1_message>(aircraftId, msg));
+        std::pair<AIRMap::iterator,bool>
+                ret = cache.emplace(aircraftId, msg);
         if (!ret.second)
         {
             cache.erase(aircraftId);
-            cache.insert(std::pair<int, SBS1_message>(aircraftId, msg));
+            cache.emplace(aircraftId, msg);
         }
     }
 }
 
-std::map<int, SBS1_message> SearchService::getCache()
+AIRMap SearchService::getCache()
 {
     return cache;
 }
 
 bool SearchService::cleanupCache()
 {
-    std::map<int, SBS1_message> new_data;
-    std::map<int, SBS1_message>::iterator it = cache.begin();
+    AIRMap new_data;
+    AIRMap::iterator it = cache.begin();
     do {
         int aircrft_id = it->first;
         SBS1_message msg = it->second;
@@ -77,7 +79,7 @@ bool SearchService::cleanupCache()
 
         // add non-expired message to new data
         if (td < boost::posix_time::seconds(AIRCRAFT_DATA_EXPIRATION_DELAY_SEC))
-            new_data.insert(std::pair<int, SBS1_message>(aircrft_id, msg));
+            new_data.emplace(aircrft_id, msg);
     } while (it++ != cache.end());
 
     cache = new_data;

@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
 #ifdef _WIN32
     strcpy(radarStartCmd, "start ");  // run in background
 #endif
-    strcpy(radarStartCmd, "../dump1090-original/dump1090 --metric --raw --net --net-sbs-port ");
+    strcpy(radarStartCmd, "./bin/dump1090 --metric --raw --net --net-sbs-port ");
     strcat(radarStartCmd, argv[2]);
 #ifdef __linux__
     strcat(radarStartCmd, " & >/dev/null 2>&1"); // silently run in background
@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
     search_service.startTracking();
 
     Radar radar(service);
-    radar.start();
+    radar.attach(search_service);
 
     for (;;)
     {
@@ -68,7 +68,10 @@ int main(int argc, char* argv[])
         search_service.read(ss);
     }
     std::cout << "Closing connection" << std::endl;
+
     sock.close();
+    search_service.stopTracking();
+    radar.stop();
   }
   // handle any exceptions that may have been thrown.
   catch (std::exception& e)

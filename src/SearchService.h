@@ -3,7 +3,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
-#include <boost/date_time.hpp>
+#include <boost/date_time.hpp> // TODO: <ctime>
 #include <boost/bind.hpp>
 #include <iostream>
 #include <sstream>
@@ -63,6 +63,8 @@ struct SBS1_message
     }
 };
 
+typedef std::map<int, SBS1_message> AIRMap;
+
 class SearchService: boost::noncopyable
 {
     public:
@@ -73,12 +75,12 @@ class SearchService: boost::noncopyable
         void stopTracking();
         void read(std::stringstream&);
 
-        std::map<int, SBS1_message> getCache();
+        AIRMap getCache();
 
     private:
         boost::asio::io_service service;
         boost::asio::deadline_timer t;
-        std::map<int, SBS1_message> cache;
+        AIRMap cache;
         bool cleanupCache();
 };
 
