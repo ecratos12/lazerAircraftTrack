@@ -3,8 +3,7 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-#define RADAR_UPDATE_DELAY_SEC  2
-
+// Golosiiv (id=1824)
 const double LOCAL_LAT = 50.;
 const double LOCAL_LON = 30.;
 const double LOCAL_ALT = 300.;
@@ -47,13 +46,18 @@ Radar::~Radar() = default;
 void Radar::attach(SearchService &service)
 {
     io_service.run();
-    readAllCache(service);
+    _readAirData(service);
 }
 
 void Radar::stop()
 {
     io_service.stop();
     t.cancel();
+}
+
+ACMap Radar::getCache()
+{
+    return cache;
 }
 
 ACPoint Radar::convertRawMessage(SBS1_message &msg)
@@ -77,7 +81,7 @@ ACPoint Radar::convertRawMessage(SBS1_message &msg)
     return data_from_msg;
 }
 
-void Radar::readAllCache(SearchService &service)
+void Radar::_readAirData(SearchService &service)
 {
     auto it = service.getCache().begin();
     do {
@@ -99,10 +103,10 @@ void Radar::readAllCache(SearchService &service)
     } while (it++ != service.getCache().end());
 
     t.expires_from_now(boost::posix_time::seconds(RADAR_UPDATE_DELAY_SEC));
-//    t.async_wait(boost::bind(&Radar::readAllCache, this, _1)(searchService));
+//    t.async_wait(boost::bind(&Radar::_readAirData, this, _1)(searchService));
     t.async_wait([&](const boost::system::error_code& error) {
         if (!error) {
-            readAllCache(service);
+            _readAirData(service);
         }
     });
 }

@@ -1,6 +1,8 @@
 #ifndef RADAR_H
 #define RADAR_H
 
+#define RADAR_UPDATE_DELAY_SEC  2
+
 #include "SearchService.h"
 
 // Aircraft radar data
@@ -23,14 +25,15 @@ class Radar : public boost::noncopyable
         void attach(SearchService&);
         void stop();
 
-        ACPoint convertRawMessage(SBS1_message&);
-        void readAllCache(SearchService&);
+        ACMap getCache();
 
-    private:
+    protected:
+        void _readAirData(SearchService&);
+        ACPoint convertRawMessage(SBS1_message&);
+
         boost::asio::io_service io_service;
         boost::asio::deadline_timer t;
         ACMap cache;
-
 };
 
 #endif // RADAR_H

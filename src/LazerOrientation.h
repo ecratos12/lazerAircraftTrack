@@ -1,6 +1,8 @@
 #ifndef LAZERORIENTATION_H
 #define LAZERORIENTATION_H
 
+#define LAZER_ORIENTATION_UPDATE_DELAY_SEC 1
+
 #include "SearchService.h"
 #include <ctime>
 
@@ -36,6 +38,7 @@ public:
     ~LazerOrientation();
 
     // supposing laser oriented straight to target satellite
+    // az, el
     std::pair<double, double> get(std::string& satString);
 
 protected:

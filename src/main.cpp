@@ -6,6 +6,7 @@
 
 #include "SearchService.h"
 #include "Radar.h"
+#include "SafetyManager.h"
 
 using namespace boost::asio;
 
@@ -37,17 +38,27 @@ int main(int argc, char* argv[])
 
     io_service service;
 
+    // make connection
+
     ip::tcp::endpoint ep(ip::address::from_string(argv[1]), atoi(argv[2]));
     ip::tcp::socket sock(service);
     sock.open(ep.protocol());
     sock.set_option(ip::tcp::socket::reuse_address(true));
     sock.connect(ep);
 
+    // start services
+
     SearchService search_service(service);
     search_service.startTracking();
 
     Radar radar(service);
     radar.attach(search_service);
+
+    LazerOrientation lazerOrientation;
+
+    std::string some_string_sat_name("sat_name");
+    SafetyManager safetyManager(service);
+    safetyManager.attach(radar, lazerOrientation, some_string_sat_name);
 
     for (;;)
     {
@@ -70,8 +81,9 @@ int main(int argc, char* argv[])
     std::cout << "Closing connection" << std::endl;
 
     sock.close();
-    search_service.stopTracking();
+    safetyManager.stop();
     radar.stop();
+    search_service.stopTracking();
   }
   // handle any exceptions that may have been thrown.
   catch (std::exception& e)

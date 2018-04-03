@@ -1,6 +1,8 @@
 #ifndef SEARCH_SERVICE_H
 #define SEARCH_SERVICE_H
 
+#define AIRCRAFT_DATA_EXPIRATION_DELAY_SEC  30
+
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 #include <boost/date_time.hpp> // TODO: <ctime>
@@ -59,7 +61,8 @@ struct SBS1_message
 {
     std::vector<std::string> params;
     bool isValid(){
-        return (params[3]!="" /*&& params[6]!="" && params[7]!=""*/ && params[11]!="" && params[14]!="" && params[15]!="");
+        return (!params[3].empty() /*&& params[6]!="" && params[7]!=""*/
+                && !params[11].empty() && !params[14].empty() && !params[15].empty());
     }
 };
 
@@ -68,7 +71,7 @@ typedef std::map<int, SBS1_message> AIRMap;
 class SearchService: boost::noncopyable
 {
     public:
-        SearchService(boost::asio::io_service&);
+        explicit SearchService(boost::asio::io_service&);
         ~SearchService();
 
         void startTracking();
@@ -78,7 +81,7 @@ class SearchService: boost::noncopyable
         AIRMap getCache();
 
     private:
-        boost::asio::io_service service;
+        boost::asio::io_service io_service;
         boost::asio::deadline_timer t;
         AIRMap cache;
         bool cleanupCache();

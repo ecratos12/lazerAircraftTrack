@@ -1,7 +1,6 @@
 #include "SearchService.h"
 #include <ctime>
 
-#define AIRCRAFT_DATA_EXPIRATION_DELAY_SEC  30
 
 SearchService::SearchService(boost::asio::io_service &io_service)
     : t(io_service)
@@ -12,12 +11,12 @@ SearchService::~SearchService()
 
 void SearchService::startTracking()
 {
-    service.run();
+    io_service.run();
 }
 
 void SearchService::stopTracking()
 {
-    service.stop();
+    io_service.stop();
     t.cancel();
 }
 
@@ -34,7 +33,7 @@ void SearchService::read(std::stringstream &ss)
 
     if (msg.isValid())
     {
-        if (msg.params[6]!="" && msg.params[7]!="") {
+        if (!msg.params[6].empty() && !msg.params[7].empty()) {
             time_t rtime;
             time(&rtime);
             struct tm * timeinfo;
@@ -86,5 +85,5 @@ bool SearchService::cleanupCache()
 
     t.expires_from_now(boost::posix_time::seconds(AIRCRAFT_DATA_EXPIRATION_DELAY_SEC/2));
     t.async_wait(boost::bind(&SearchService::cleanupCache, this));
-    service.run();
+    io_service.run();
 }
