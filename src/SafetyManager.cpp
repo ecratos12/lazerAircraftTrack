@@ -5,7 +5,7 @@
 
 //-----------------CALCULATIONS
 
-const double cosCriticalAngle = cos(M_PI / 18.); // 10 grads
+const double cosCriticalAngle = cos(CRITICAL_ANGLE_GRAD * M_PI / 180.);
 
 // angle between some aircraft and laser orientation
 // az, el

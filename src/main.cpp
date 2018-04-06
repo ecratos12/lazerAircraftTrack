@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
 #ifdef _WIN32
     strcpy(radarStartCmd, "start ");  // run in background
 #endif
-    strcpy(radarStartCmd, "./bin/dump1090 --metric --raw --net --net-sbs-port ");
+    strcpy(radarStartCmd, "nohup ./bin/dump1090 --metric --raw --net --net-sbs-port ");
     strcat(radarStartCmd, argv[2]);
 #ifdef __linux__
     strcat(radarStartCmd, " & >/dev/null 2>&1"); // silently run in background
@@ -53,12 +53,15 @@ int main(int argc, char* argv[])
 
     Radar radar(service);
     radar.attach(search_service);
+    std::cout << "Radar attached" << std::endl;
 
     LazerOrientation lazerOrientation;
 
-    std::string some_string_sat_name("sat_name");
-    SafetyManager safetyManager(service);
-    safetyManager.attach(radar, lazerOrientation, some_string_sat_name);
+    // std::string some_string_sat_name("sat_name");
+    // SafetyManager safetyManager(service);
+    // safetyManager.attach(radar, lazerOrientation, some_string_sat_name);
+
+    service.run();
 
     for (;;)
     {
@@ -75,13 +78,12 @@ int main(int argc, char* argv[])
 
         std::stringstream ss;
         ss.write(buf.data(), len);
-        std::cout << "AFTER READ_SOME" << std::endl;
         search_service.read(ss);
     }
     std::cout << "Closing connection" << std::endl;
 
     sock.close();
-    safetyManager.stop();
+    // safetyManager.stop();
     radar.stop();
     search_service.stopTracking();
   }

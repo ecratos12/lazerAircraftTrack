@@ -2,6 +2,7 @@
 
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <stdlib.h>
 
 // Golosiiv (id=1824)
 const double LOCAL_LAT = 50.;
@@ -18,17 +19,17 @@ const double R = 6371000;
     ( (x) / M_PI * 180. )
 
 double tanA(SBS1_message &msg) {
-    double lat = GRAD_TO_RAD(std::stod(msg.params[14]));
-    double lon = GRAD_TO_RAD(std::stod(msg.params[15]));
+    double lat = GRAD_TO_RAD(strtod(msg.params[14].c_str(), NULL));
+    double lon = GRAD_TO_RAD(strtod(msg.params[15].c_str(), NULL));
 
     return (lon - LOCAL_LON)*cos(lat) /
             ((lat - LOCAL_LAT) + (lon - LOCAL_LON)*(lon - LOCAL_LON)*sin(LOCAL_LAT)*cos(lat)/2);
 }
 
 double tanH(SBS1_message &msg) {
-    double lat = GRAD_TO_RAD(std::stod(msg.params[14]));
-    double lon = GRAD_TO_RAD(std::stod(msg.params[15]));
-    double alt = std::stod(msg.params[11]);
+    double lat = GRAD_TO_RAD(strtod(msg.params[14].c_str(), NULL));
+    double lon = GRAD_TO_RAD(strtod(msg.params[15].c_str(), NULL));
+    double alt = strtod(msg.params[11].c_str(), NULL);
     double deltaAngleSq = (lat - LOCAL_LAT)*(lat - LOCAL_LAT) +
                           (lon - LOCAL_LON)*(lon - LOCAL_LON)*cos(lat)*cos(lat); // TODO : less calc-s
     return (alt - LOCAL_ALT)*(alt - LOCAL_ALT) - deltaAngleSq*(R + alt)*(alt - LOCAL_ALT) /
@@ -62,12 +63,12 @@ ACMap Radar::getCache()
 
 ACPoint Radar::convertRawMessage(SBS1_message &msg)
 {
-    double lat = GRAD_TO_RAD(std::stod(msg.params[14]));
-    double lon = GRAD_TO_RAD(std::stod(msg.params[15]));
-    double alt = std::stod(msg.params[11]);
+    double lat = GRAD_TO_RAD(strtod(msg.params[14].c_str(), NULL));
+    double lon = GRAD_TO_RAD(strtod(msg.params[15].c_str(), NULL));
+    double alt = strtod(msg.params[11].c_str(), NULL);
 
     ACPoint data_from_msg{};
-    data_from_msg.grSpeedKmPH = std::stod(msg.params[12]);
+    data_from_msg.grSpeedKmPH = strtod(msg.params[12].c_str(), NULL);
     data_from_msg.azGrad = RAD_TO_GRAD(atan2(  (lon - LOCAL_LON)*cos(lat) ,
                                                     (lat - LOCAL_LAT) + (lon - LOCAL_LON)*(lon - LOCAL_LON)*sin(LOCAL_LAT)*cos(lat)/2
                                             ));
@@ -83,24 +84,29 @@ ACPoint Radar::convertRawMessage(SBS1_message &msg)
 
 void Radar::_readAirData(SearchService &service)
 {
-    auto it = service.getCache().begin();
-    do {
-        int aircrft_id = it->first;
-        ACPoint aircrft_info = convertRawMessage(it->second);
+    std::cout << "Radar::_readAirData" << std::endl;
+    if (! service.getCache().empty() ) {
+        auto it = service.getCache().begin();
+        do {
+            int aircrft_id = it->first;
+            ACPoint aircrft_info = convertRawMessage(it->second);
 
-        std::cout << aircrft_id << "  " <<
-                     aircrft_info.azGrad << "  " <<
-                     aircrft_info.elGrad << "  " <<
-                     aircrft_info.distanceMeters << std::endl;
+            std::cout << aircrft_id << "  " <<
+                        aircrft_info.azGrad << "  " <<
+                        aircrft_info.elGrad << "  " <<
+                        aircrft_info.distanceMeters << std::endl;
 
-        std::pair<ACMap::iterator,bool>
-                ret = cache.emplace(aircrft_id, aircrft_info);
-        if (!ret.second) {
-            cache.erase(aircrft_id);
-            cache.emplace(aircrft_id, aircrft_info);
-        }
+            std::pair<ACMap::iterator,bool>
+                    ret = cache.emplace(aircrft_id, aircrft_info);
+            if (!ret.second) {
+                cache.erase(aircrft_id);
+                cache.emplace(aircrft_id, aircrft_info);
+            }
 
-    } while (it++ != service.getCache().end());
+        } while (it++ != service.getCache().end());
+        std::cout << "Radar::_readAirData readed cache" << std::endl;
+    }
+    std::cout << "Radar::_readAirData proceeded" << std::endl;
 
     t.expires_from_now(boost::posix_time::seconds(RADAR_UPDATE_DELAY_SEC));
 //    t.async_wait(boost::bind(&Radar::_readAirData, this, _1)(searchService));
@@ -109,6 +115,7 @@ void Radar::_readAirData(SearchService &service)
             _readAirData(service);
         }
     });
+    io_service.run();
 }
 
 

@@ -15,10 +15,11 @@ void EphData::fill()
     for (directory_iterator dir_it(p); dir_it != eod; ++dir_it)
     {
         std::string fname = dir_it->path().string();
-        std::ifstream in("./ephdata" + fname);
-        if (fname.substr(0,4) == "menu")
+        std::ifstream in(fname);
+        if (fname.substr(10,4) == "menu") {
+            in.close();        
             continue;
-
+        }       
         std::string tmp;
         std::getline(in, tmp);
 
@@ -31,8 +32,11 @@ void EphData::fill()
         y = y - 1900;
 
         do {
-            std::getline(in,tmp);
-            SATPoint point{};
+            std::getline(in, tmp);
+            time_t now;
+            time(&now);
+        
+            SATPoint point{0,0,localtime(&now)};
             sscanf(tmp.c_str(), "%i %i %i %lf %lf",
                    &point.time->tm_hour,
                    &point.time->tm_min,
@@ -43,7 +47,7 @@ void EphData::fill()
             point.time->tm_mon = m;
             point.time->tm_year = y;
             satData.push_back(point);
-        } while (tmp.empty());
+        } while (!tmp.empty());
 
         auto iter = _data.find(std::string(sat_name));
         if (iter != _data.end()) {
@@ -83,7 +87,9 @@ SATMap EphData::getCurrent()
 
 LazerOrientation::LazerOrientation()
 {
+    std::cout << "Get eph data" << std::endl;
     ephData.fill();
+    std::cout << "Got eph data" << std::endl;
 }
 
 LazerOrientation::~LazerOrientation() = default;

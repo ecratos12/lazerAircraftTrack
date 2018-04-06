@@ -1,6 +1,8 @@
 #ifndef SAFETYMANAGER_H
 #define SAFETYMANAGER_H
 
+#define CRITICAL_ANGLE_GRAD 10.
+
 #include "Radar.h"
 #include "LazerOrientation.h"
 
