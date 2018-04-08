@@ -57,9 +57,9 @@ int main(int argc, char* argv[])
 
     LazerOrientation lazerOrientation;
 
-    // std::string some_string_sat_name("sat_name");
-    // SafetyManager safetyManager(service);
-    // safetyManager.attach(radar, lazerOrientation, some_string_sat_name);
+    std::string some_string_sat_name("sat_name");
+    SafetyManager safetyManager(service);
+    safetyManager.attach(radar, lazerOrientation, some_string_sat_name);
 
     service.run();
 

@@ -11,7 +11,7 @@ struct SATPoint
 {
     double azGrad;
     double elGrad;
-    struct tm * time;
+    struct tm timeStamp;
 };
 
 typedef std::map<std::string, SATPoint> SATMap;
@@ -28,6 +28,9 @@ public:
 
 
 protected:
+    // workaround of empty current satellites sky map
+    // if satellite isn't available, set: az = 0, el = -90
+    bool _isAvailable_perSat;
     std::map<std::string, SATData> _data;
 };
 

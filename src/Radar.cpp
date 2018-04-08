@@ -36,7 +36,7 @@ double tanH(SBS1_message &msg) {
             deltaAngleSq*(R + alt)*(R + alt);
 }
 
-// ----------------INTERFACE
+// ----------------CLASS RADAR IMPLEMENTATION
 
 Radar::Radar(boost::asio::io_service &service)
     :t(service)
@@ -103,10 +103,9 @@ void Radar::_readAirData(SearchService &service)
                 cache.emplace(aircrft_id, aircrft_info);
             }
 
-        } while (it++ != service.getCache().end());
+        } while (++it != service.getCache().end());
         std::cout << "Radar::_readAirData readed cache" << std::endl;
     }
-    std::cout << "Radar::_readAirData proceeded" << std::endl;
 
     t.expires_from_now(boost::posix_time::seconds(RADAR_UPDATE_DELAY_SEC));
 //    t.async_wait(boost::bind(&Radar::_readAirData, this, _1)(searchService));

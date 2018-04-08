@@ -4,6 +4,8 @@
 
 using namespace boost::filesystem;
 
+//---------------------------CLASS EPHDATA IMPLEMENTATION--------------------------------------------
+
 EphData::EphData() = default;
 EphData::~EphData() = default;
 
@@ -31,23 +33,33 @@ void EphData::fill()
         m--;
         y = y - 1900;
 
-        do {
-            std::getline(in, tmp);
+        while (std::getline(in, tmp)) {
+            if (tmp.empty())
+                continue;
+
             time_t now;
             time(&now);
+            struct tm now_tm;
+            localtime_r(&now, &now_tm);
         
-            SATPoint point{0,0,localtime(&now)};
+            SATPoint point{0,0,now_tm};
             sscanf(tmp.c_str(), "%i %i %i %lf %lf",
-                   &point.time->tm_hour,
-                   &point.time->tm_min,
-                   &point.time->tm_sec,
+                   &point.timeStamp.tm_hour,
+                   &point.timeStamp.tm_min,
+                   &point.timeStamp.tm_sec,
                    &point.azGrad,
                    &point.elGrad);
-            point.time->tm_mday = d;
-            point.time->tm_mon = m;
-            point.time->tm_year = y;
+            point.timeStamp.tm_mday = d;
+            point.timeStamp.tm_mon = m;
+            point.timeStamp.tm_year = y;
+
             satData.push_back(point);
-        } while (!tmp.empty());
+
+//            char buffer[80];
+//            strftime(buffer,sizeof(buffer),"%d-%m-%Y %I:%M:%S",&satData.back().timeStamp);
+//            std::string str(buffer);
+//            std::cout << str << std::endl;
+        }
 
         auto iter = _data.find(std::string(sat_name));
         if (iter != _data.end()) {
@@ -65,29 +77,53 @@ SATMap EphData::getCurrent()
     time_t now;
     time(&now);
 
+    struct tm now_tm;
+    localtime_r(&now, &now_tm);
+
+    const SATPoint UNAVAILABLE_SAT_POSITION = {
+        0.
+        , -90.
+        , now_tm
+    };
+
     SATMap currentPositions;
 
-    auto it = _data.begin();
-    do {
-        for (auto inner_it = it->second.begin(); inner_it != it->second.end() ; ++inner_it)
+    for (auto &it : _data)
+    {
+        _isAvailable_perSat = false;
+        for (auto inner_it = it.second.begin(); inner_it != it.second.end() ; ++inner_it)
         {
-            double t_diff = difftime(now, mktime(inner_it->time));
+            double t_diff = difftime(now, mktime(&inner_it->timeStamp));
             if ((int)t_diff == 0) {
-                currentPositions.emplace(it->first, *inner_it);
+                currentPositions.emplace(it.first, *inner_it);
+                _isAvailable_perSat = true;
+                std::cout << " EphData::getCurrent -- Found current SATPoint for " << it.first << std::endl;
             }
-            // delete outdated satellite data
-            if ((int)t_diff > 0) {
-                it->second.erase(inner_it);
+//            delete outdated satellite data
+            if (!it.second.empty()) {
+                if ((int)t_diff > 0) {
+                    if (it.second.size() != 1) {
+                        it.second.erase(inner_it);
+                        --inner_it;
+                    }
+                }
             }
         }
-    } while (it++ != _data.end());
+        if (!_isAvailable_perSat) {
+            currentPositions.emplace(it.first, UNAVAILABLE_SAT_POSITION);
+            std::cout << "EphData::getCurrent -- Set unavailable SAT " << it.first << std::endl;
+        }
 
+        std::cout << "EphData::getCurrent -- SATData proceeded with " << it.first << std::endl;
+    }
+    std::cout << "EphData::getCurrent -- Got currentPositions" << std::endl;
     return currentPositions;
 }
 
+//---------------------------CLASS LAZERORIENTATION IMPLEMENTATION--------------------------------------------
+
 LazerOrientation::LazerOrientation()
 {
-    std::cout << "Get eph data" << std::endl;
     ephData.fill();
     std::cout << "Got eph data" << std::endl;
 }
@@ -99,8 +135,10 @@ void LazerOrientation::_setFromServo() {}
 void LazerOrientation::_setFromEph(std::string& satString)
 {
     SATMap satMap = ephData.getCurrent();
-    azGrad = satMap.at(satString).azGrad;
-    elGrad = satMap.at(satString).elGrad;
+//    azGrad = satMap.at(satString).azGrad;
+//    elGrad = satMap.at(satString).elGrad;
+    azGrad = 0;
+    elGrad = 0;
 }
 
 std::pair<double, double> LazerOrientation::get(std::string& satString)

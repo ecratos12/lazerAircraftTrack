@@ -35,7 +35,7 @@ SafetyManager::SafetyManager(boost::asio::io_service &service)
 
 SafetyManager::~SafetyManager() = default;
 
-void SafetyManager::attach(Radar& radar, LazerOrientation& lazerOrientation, std::string satName)
+void SafetyManager::attach(Radar& radar, LazerOrientation& lazerOrientation, std::string& satName)
 {
     io_service.run();
     _monitoring(radar, lazerOrientation, satName);
@@ -54,11 +54,13 @@ void SafetyManager::showStatus()
 
 void SafetyManager::_monitoring(Radar& radar, LazerOrientation& lazerOrientation, std::string& satName)
 {
+    std::cout << "SafetyManager::_monitoring" << std::endl;
     auto laserGazePos = lazerOrientation.get(satName);
     ACMap acGazePos = radar.getCache();
 
     for (auto const& acPos : acGazePos) {
-        if (cosLAZER_AIRCRAFT(laserGazePos, std::make_pair(acPos.second.azGrad, acPos.second.elGrad)) > cosCriticalAngle) {
+        if (cosLAZER_AIRCRAFT(laserGazePos, std::make_pair(acPos.second.azGrad, acPos.second.elGrad))
+            > cosCriticalAngle) {
             status = Status::Danger;
 //            TURN-OFF LASER COMMAND
         }
@@ -71,4 +73,5 @@ void SafetyManager::_monitoring(Radar& radar, LazerOrientation& lazerOrientation
             _monitoring(radar, lazerOrientation, satName);
         }
     });
+    io_service.run();
 }

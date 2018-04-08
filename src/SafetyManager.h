@@ -20,7 +20,7 @@ public:
     ~SafetyManager();
 
     // TODO : vector of satName's
-    void attach(Radar&, LazerOrientation&, std::string satName);
+    void attach(Radar&, LazerOrientation&, std::string& satName);
     void stop();
 
     void showStatus();

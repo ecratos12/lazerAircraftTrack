@@ -38,7 +38,7 @@ void SearchService::read(std::stringstream &ss)
         time_t rtime;
         time(&rtime);
         struct tm * timeinfo;
-        // stamp message with time when readed
+        // stamp message with timeStamp when readed
         timeinfo = localtime(&rtime);
 
         char buf[64];
@@ -56,6 +56,7 @@ void SearchService::read(std::stringstream &ss)
             cache.erase(aircraftId);
             cache.emplace(aircraftId, msg);
         }
+
         for (int i=0; i<cache[aircraftId].params.size(); i++)
             std::cout << cache[aircraftId].params[i];
         std::cout << std::endl;
@@ -86,7 +87,7 @@ bool SearchService::cleanupCache()
             // add non-expired message to new data
             if (td < boost::posix_time::seconds(AIRCRAFT_DATA_EXPIRATION_DELAY_SEC))
                 new_data.emplace(aircrft_id, msg);
-        } while (it++ != cache.end());
+        } while (++it != cache.end());
 
         cache = new_data;
     }
