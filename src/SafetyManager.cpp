@@ -29,8 +29,7 @@ double MAX_PREDICTED_cosLAZER_AIRCRAFT(std::pair<double, double> lazer, ACPoint 
 //--------------------INTERFACE
 
 SafetyManager::SafetyManager(boost::asio::io_service &service)
-        :t(service),
-         status(Status::Ok)
+        :t(service)
 {}
 
 SafetyManager::~SafetyManager() = default;
@@ -49,7 +48,11 @@ void SafetyManager::stop()
 
 void SafetyManager::showStatus()
 {
-    // TODO : GUI (big red buttons, staff..)
+//     TODO : GUI (big red buttons, staff..)
+//    SFML window
+    std::ofstream statusFile("current_status");
+    statusFile << (status==Status::Ok ? "Ok" : "Danger") << std::endl;
+    statusFile.close();
 }
 
 void SafetyManager::_monitoring(Radar& radar, LazerOrientation& lazerOrientation, std::string& satName)
@@ -58,14 +61,33 @@ void SafetyManager::_monitoring(Radar& radar, LazerOrientation& lazerOrientation
     auto laserGazePos = lazerOrientation.get(satName);
     ACMap acGazePos = radar.getCache();
 
+    status = Status::Ok;
     for (auto const& acPos : acGazePos) {
         if (cosLAZER_AIRCRAFT(laserGazePos, std::make_pair(acPos.second.azGrad, acPos.second.elGrad))
             > cosCriticalAngle) {
             status = Status::Danger;
 //            TURN-OFF LASER COMMAND
+            break;
         }
     }
 
+    showStatus();
+
+    // plotter addition
+//#ifdef PLOT_ENABLED
+    std::ofstream csvForPlot("current_positions.csv");
+
+    SATMap satMap = lazerOrientation.getCurrentSatMap();
+    for (auto const& satPoint : satMap) {
+        if (satPoint.second.elGrad > 0)
+            csvForPlot << "SAT," << satPoint.first << "," << satPoint.second.azGrad << "," << satPoint.second.elGrad << std::endl;
+    }
+    for (auto const& acPoint : acGazePos) {
+        csvForPlot << "AIR," << acPoint.first << "," << acPoint.second.azGrad << "," << acPoint.second.elGrad << std::endl;
+    }
+    csvForPlot.close();
+
+//#endif
 
     t.expires_from_now(boost::posix_time::seconds(LAZER_ORIENTATION_UPDATE_DELAY_SEC));
     t.async_wait([&](const boost::system::error_code& error) {

@@ -27,9 +27,7 @@ void SearchService::read(std::stringstream &ss)
     SBS1_message msg;
     while (std::getline(ss, param, ',')) {
         msg.params.push_back(param);
-        std::cout << param << ",";
     }
-    std::cout << std::endl;
 
     int aircraftId = (int)strtol(msg.params[4].c_str(), NULL, 16);
 
@@ -42,10 +40,10 @@ void SearchService::read(std::stringstream &ss)
         timeinfo = localtime(&rtime);
 
         char buf[64];
-        strftime(buf, sizeof(buf), "%Y/%m/%d", timeinfo);
-        msg.params[6] += std::string(buf);
-        strftime(buf, sizeof(buf), "%H/%M/%S", timeinfo);
-        msg.params[7] += std::string(buf);
+        strftime(buf, sizeof(buf), "%Y-%m-%d", timeinfo);
+        msg.params[6] = std::string(buf);
+        strftime(buf, sizeof(buf), "%H:%M:%S", timeinfo);
+        msg.params[7] = std::string(buf);
     
         // Insert only with a new unique key.
         // One message per aircraft
@@ -58,7 +56,7 @@ void SearchService::read(std::stringstream &ss)
         }
 
         for (int i=0; i<cache[aircraftId].params.size(); i++)
-            std::cout << cache[aircraftId].params[i];
+            std::cout << cache[aircraftId].params[i] << "   ";
         std::cout << std::endl;
 
     }

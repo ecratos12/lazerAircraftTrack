@@ -7,28 +7,67 @@
 #include "SearchService.h"
 #include "Radar.h"
 #include "SafetyManager.h"
+#include "LazerOrientation.h"
 
 using namespace boost::asio;
+
+io_service service;
+SearchService search_service(service);
+Radar radar(service);
+LazerOrientation lazerOrientation;
+SafetyManager safetyManager(service);
+ip::tcp::socket sock(service);
+
+boost::array<char, 128> buf;
+char buf_w[1] = "";
+
+void on_read(const boost::system::error_code &ec, std::size_t bytes);
+void on_write(const boost::system::error_code &ec, std::size_t bytes) 
+{
+	sock.async_read_some(buffer(buf), on_read);
+}
+void on_read(const boost::system::error_code &ec, std::size_t bytes) 
+{
+    if (bytes > 0) {
+        std::stringstream ss;
+        ss.write(buf.data(), buf.size());
+        search_service.read(ss);
+    }
+
+	sock.async_write_some(buffer(buf_w,1), on_write);
+}
+void on_connect(const boost::system::error_code &ec) 
+{
+    std::cout << "Connecting" << std::endl;
+	sock.async_read_some(buffer(buf), on_read);
+}
 
 int main(int argc, char* argv[])
 {
   try
   {
-    // should specify the server - the 2nd argument, and port - the 3rd argument
-    if (argc != 3)
+    // should specify the server, port and sattelite to track
+    if (argc < 4)
     {
-      std::cerr << "Usage: <program-name> <server> <port> " << std::endl;
+      std::cerr << "Usage: <program-name> <server> <port> <satellite name>" << std::endl;
       return 1;
+    }
+    // possiblity for plotting
+    if (argc > 4)
+    {
+        if (std::string(argv[4]) == "--visual" || std::string(argv[4]) == "-v") {
+            #define PLOT_ENABLED
+            // system("python plotter.py");
+        }
     }
 
     char radarStartCmd[256];
-
     // using third-party ads-b decoder
-    // send SBS formated data on specific port
+    // which sends SBS formated data on specific port
 #ifdef _WIN32
     strcpy(radarStartCmd, "start ");  // run in background
 #endif
-    strcpy(radarStartCmd, "nohup ./bin/dump1090 --metric --raw --net --net-sbs-port ");
+    strcpy(radarStartCmd, "nohup bin/dump1090 --metric --raw --net --net-sbs-port ");
     strcat(radarStartCmd, argv[2]);
 #ifdef __linux__
     strcat(radarStartCmd, " & >/dev/null 2>&1"); // silently run in background
@@ -36,63 +75,35 @@ int main(int argc, char* argv[])
     system(radarStartCmd);
     sleep(2); // Decoder initialization
 
-    io_service service;
-
     // make connection
 
     ip::tcp::endpoint ep(ip::address::from_string(argv[1]), atoi(argv[2]));
-    ip::tcp::socket sock(service);
     sock.open(ep.protocol());
     sock.set_option(ip::tcp::socket::reuse_address(true));
-    sock.connect(ep);
+    sock.async_connect(ep, on_connect);
 
     // start services
 
-    SearchService search_service(service);
     search_service.startTracking();
-
-    Radar radar(service);
     radar.attach(search_service);
     std::cout << "Radar attached" << std::endl;
-
-    LazerOrientation lazerOrientation;
-
-    std::string some_string_sat_name("sat_name");
-    SafetyManager safetyManager(service);
-    safetyManager.attach(radar, lazerOrientation, some_string_sat_name);
-
+    std::string sat_name(argv[3]);
+    safetyManager.attach(radar, lazerOrientation, sat_name);
     service.run();
 
-    for (;;)
-    {
-        // this buffer prevents self-overflow
-        boost::array<char, 128> buf;
-        boost::system::error_code ec;
+    // stop services
 
-        size_t len = sock.read_some(boost::asio::buffer(buf), ec);
-
-        if (ec == boost::asio::error::eof)
-            break;
-        else if (ec)
-            throw boost::system::system_error(ec);
-
-        std::stringstream ss;
-        ss.write(buf.data(), len);
-        search_service.read(ss);
-    }
     std::cout << "Closing connection" << std::endl;
-
     sock.close();
-    // safetyManager.stop();
+    safetyManager.stop();
     radar.stop();
     search_service.stopTracking();
+    service.stop();
   }
-  // handle any exceptions that may have been thrown.
   catch (std::exception& e)
   {
     std::cerr << "Terminated by error : " << e.what() << std::endl;
   }
 
   return 0;
-
 }

@@ -94,6 +94,7 @@ SATMap EphData::getCurrent()
         for (auto inner_it = it.second.begin(); inner_it != it.second.end() ; ++inner_it)
         {
             double t_diff = difftime(now, mktime(&inner_it->timeStamp));
+            // std::cout << t_diff << std::endl;
             if ((int)t_diff == 0) {
                 currentPositions.emplace(it.first, *inner_it);
                 _isAvailable_perSat = true;
@@ -111,12 +112,10 @@ SATMap EphData::getCurrent()
         }
         if (!_isAvailable_perSat) {
             currentPositions.emplace(it.first, UNAVAILABLE_SAT_POSITION);
-            std::cout << "EphData::getCurrent -- Set unavailable SAT " << it.first << std::endl;
+//            std::cout << "EphData::getCurrent -- Set unavailable SAT " << it.first << std::endl;
         }
-
-        std::cout << "EphData::getCurrent -- SATData proceeded with " << it.first << std::endl;
     }
-    std::cout << "EphData::getCurrent -- Got currentPositions" << std::endl;
+//    std::cout << "EphData::getCurrent -- Got currentPositions" << std::endl;
     return currentPositions;
 }
 
@@ -150,4 +149,9 @@ std::pair<double, double> LazerOrientation::get(std::string& satString)
     _setFromEph(satString);
     return std::make_pair(azGrad, elGrad);
 #endif
+}
+
+SATMap LazerOrientation::getCurrentSatMap()
+{
+    return ephData.getCurrent();
 }

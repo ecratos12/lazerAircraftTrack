@@ -44,6 +44,9 @@ public:
     // az, el
     std::pair<double, double> get(std::string& satString);
 
+    // addition interface for plotter
+    SATMap getCurrentSatMap();
+
 protected:
     void _setFromServo();
     void _setFromEph(std::string& satString);
