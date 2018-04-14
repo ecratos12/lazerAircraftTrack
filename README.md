@@ -3,9 +3,13 @@
 This is in-sky safety system using ADS-B radar receiver for SLR (Satellite Laser Ranging) station. It is asyncronous service which bases on processing SBS1 BaseStation format data as aircraft data from some socket, as well as processing ephemeris data as data of target satellites.
 
 [SBS1 format](http://woodair.net/sbs/Article/Barebones42_Socket_Data.htm)
+
 Ephemeris data format : 
+
 file: `SATDDMM.STA` (SAT - sattelite name, STA - station name)
+
 header: `DD MM YYYY SAT STA xxxxxxx`
+
 content: `HH MM SS Azimuth Elevation Distance x`
 
 ## Build source with command
