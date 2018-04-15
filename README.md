@@ -15,7 +15,9 @@ header: `DD MM YYYY SAT STA xxxxxxx`
 content: `HH MM SS Azimuth Elevation Distance x`
 
 ## Build source with command
-`g++ -std=c++11 src/*.cpp -o bin/binary-name -lboost_system -lpthread  -lboost_date_time`
+LINUX: `g++ -std=c++11 src/*.cpp -o bin/binary-name -lboost_system -lpthread -lboost_date_time -lboost_filesystem`
+
+WIN32: `g++ -std=c++11 src/*.cpp -o bin/binary-name.exe  -lboost_system -lboost_date_time -lboost_filesystem -lwldap32 -lws2_32 -lwsock32 -lmswsock`
 
 ( use of boost `1.65.1` http://www.boost.org/ )
 
