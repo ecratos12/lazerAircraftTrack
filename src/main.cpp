@@ -8,6 +8,7 @@
 #include "Radar.h"
 #include "SafetyManager.h"
 #include "LazerOrientation.h"
+#include "windows.h"
 
 using namespace boost::asio;
 
@@ -65,15 +66,14 @@ int main(int argc, char* argv[])
     // using third-party ads-b decoder
     // which sends SBS formated data on specific port
 #ifdef _WIN32
-    strcpy(radarStartCmd, "start ");  // run in background
+    strcpy(radarStartCmd, "start .\\bin\\dump1090.bat");  // run in background
 #endif
+#ifdef __linux__
     strcpy(radarStartCmd, "nohup bin/dump1090 --metric --raw --net --net-sbs-port ");
     strcat(radarStartCmd, argv[2]);
-#ifdef __linux__
     strcat(radarStartCmd, " & >/dev/null 2>&1"); // silently run in background
 #endif
     system(radarStartCmd);
-    sleep(2); // Decoder initialization
 
     // make connection
 

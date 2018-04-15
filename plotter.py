@@ -124,6 +124,7 @@ class mclass:
 
         window.after(1000, self.plot)
 
-window = Tk()
-start = mclass (window)
-window.mainloop()
+if __name__ == '__main__':
+    window = Tk()
+    start = mclass(window)
+    window.mainloop()

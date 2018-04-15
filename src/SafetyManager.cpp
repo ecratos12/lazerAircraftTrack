@@ -1,11 +1,11 @@
 #include "SafetyManager.h"
 
-#define _USE_MATH_DEFINES
 #include <cmath>
+const double PI = 3.14159265358979323846;
 
 //-----------------CALCULATIONS
 
-const double cosCriticalAngle = cos(CRITICAL_ANGLE_GRAD * M_PI / 180.);
+const double cosCriticalAngle = cos(CRITICAL_ANGLE_GRAD * PI / 180.);
 
 // angle between some aircraft and laser orientation
 // az, el

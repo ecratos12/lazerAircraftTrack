@@ -1,12 +1,13 @@
 #include "Radar.h"
 
-#define _USE_MATH_DEFINES
 #include <cmath>
 #include <stdlib.h>
 
+const double PI = 3.14159265358979323846;
+
 // Golosiiv (id=1824)
-const double LOCAL_LAT = 50.363127778 * M_PI / 180.;
-const double LOCAL_LON = 30.495891667 * M_PI / 180.;
+const double LOCAL_LAT = 50.363127778 * PI / 180.;
+const double LOCAL_LON = 30.495891667 * PI / 180.;
 const double LOCAL_ALT = 211.8;
 const double R = 6371000.;
 const double FOOTS_IN_METER = 100. / 30.48;
@@ -14,10 +15,10 @@ const double FOOTS_IN_METER = 100. / 30.48;
 // ------------------STUFF
 
 #define GRAD_TO_RAD(x) \
-    ( (x) * M_PI / 180. )
+    ( (x) * PI / 180. )
 
 #define RAD_TO_GRAD(x) \
-    ( (x) / M_PI * 180. )
+    ( (x) / PI * 180. )
 
 double tanA(SBS1_message &msg) {
     double lat = GRAD_TO_RAD(strtod(msg.params[14].c_str(), NULL));
@@ -72,7 +73,7 @@ ACPoint Radar::convertRawMessage(SBS1_message &msg)
     data_from_msg.grSpeedKmPH = strtod(msg.params[12].c_str(), NULL);
     data_from_msg.azGrad = RAD_TO_GRAD(atan2(  (lon - LOCAL_LON)*cos(lat) ,
                                                     (lat - LOCAL_LAT) + (lon - LOCAL_LON)*(lon - LOCAL_LON)*sin(LOCAL_LAT)*cos(lat)/2
-                                            ) + M_PI);
+                                            ) + PI);
     double tgH = tanH(msg);
     double tgA = tanA(msg);
     data_from_msg.elGrad = RAD_TO_GRAD(atan(tgH));

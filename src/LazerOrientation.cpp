@@ -39,10 +39,16 @@ void EphData::fill()
 
             time_t now;
             time(&now);
+#ifdef __linux__
             struct tm now_tm;
             localtime_r(&now, &now_tm);
-        
             SATPoint point{0,0,now_tm};
+#endif
+#ifdef _WIN32
+            struct tm* now_tm;
+            now_tm = localtime(&now);
+            SATPoint point{0,0,*now_tm};
+#endif
             sscanf(tmp.c_str(), "%i %i %i %lf %lf",
                    &point.timeStamp.tm_hour,
                    &point.timeStamp.tm_min,
@@ -77,14 +83,24 @@ SATMap EphData::getCurrent()
     time_t now;
     time(&now);
 
+#ifdef __linux__
     struct tm now_tm;
     localtime_r(&now, &now_tm);
-
     const SATPoint UNAVAILABLE_SAT_POSITION = {
         0.
         , -90.
         , now_tm
     };
+#endif
+#ifdef _WIN32
+    struct tm* now_tm;
+    now_tm = localtime(&now);
+    const SATPoint UNAVAILABLE_SAT_POSITION = {
+        0.
+        , -90.
+        , *now_tm
+    };
+#endif
 
     SATMap currentPositions;
 
