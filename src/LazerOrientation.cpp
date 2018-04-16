@@ -11,7 +11,13 @@ EphData::~EphData() = default;
 
 void EphData::fill()
 {
+#ifdef __linux__
     path p("./ephdata");
+#endif
+#ifdef _WIN32
+    path p(".\\ephdata");
+#endif
+
     directory_iterator eod;
 
     for (directory_iterator dir_it(p); dir_it != eod; ++dir_it)
