@@ -8,7 +8,10 @@
 #include "Radar.h"
 #include "SafetyManager.h"
 #include "LazerOrientation.h"
+
+#ifdef _WIN32
 #include "windows.h"
+#endif
 
 using namespace boost::asio;
 
@@ -45,8 +48,8 @@ void on_connect(const boost::system::error_code &ec)
 
 int main(int argc, char* argv[])
 {
-  try
-  {
+//   try
+//   {
     // should specify the server, port and sattelite to track
     if (argc < 4)
     {
@@ -74,6 +77,7 @@ int main(int argc, char* argv[])
     strcat(radarStartCmd, " & >/dev/null 2>&1"); // silently run in background
 #endif
     system(radarStartCmd);
+    sleep(1);
 
     // make connection
 
@@ -99,11 +103,11 @@ int main(int argc, char* argv[])
     radar.stop();
     search_service.stopTracking();
     service.stop();
-  }
-  catch (std::exception& e)
-  {
-    std::cerr << "Terminated by error : " << e.what() << std::endl;
-  }
+//   }
+//   catch (std::exception& e)
+//   {
+//     std::cerr << "Terminated by error : " << e.what() << std::endl;
+//   }
 
   return 0;
 }

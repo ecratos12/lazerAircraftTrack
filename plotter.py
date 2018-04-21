@@ -122,7 +122,7 @@ class mclass:
         self.fig.tight_layout()
         self.canvas.draw()
 
-        window.after(1000, self.plot)
+        window.after(1200, self.plot)
 
 if __name__ == '__main__':
     window = Tk()

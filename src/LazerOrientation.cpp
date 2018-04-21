@@ -47,7 +47,7 @@ void EphData::fill()
             time(&now);
 #ifdef __linux__
             struct tm now_tm;
-            localtime_r(&now, &now_tm);
+            gmtime_r(&now, &now_tm);
             SATPoint point{0,0,now_tm};
 #endif
 #ifdef _WIN32
@@ -91,7 +91,7 @@ SATMap EphData::getCurrent()
 
 #ifdef __linux__
     struct tm now_tm;
-    localtime_r(&now, &now_tm);
+    gmtime_r(&now, &now_tm);
     const SATPoint UNAVAILABLE_SAT_POSITION = {
         0.
         , -90.
@@ -110,17 +110,22 @@ SATMap EphData::getCurrent()
 
     SATMap currentPositions;
 
+    std::cout << " EphData::getCurrent -- Found current SATPoint for ";
     for (auto &it : _data)
     {
         _isAvailable_perSat = false;
         for (auto inner_it = it.second.begin(); inner_it != it.second.end() ; ++inner_it)
         {
-            double t_diff = difftime(now, mktime(&inner_it->timeStamp));
-            // std::cout << t_diff << std::endl;
+            #ifdef __linux__
+            double t_diff = difftime(mktime(&now_tm), mktime(&inner_it->timeStamp));
+            #endif
+            #ifdef _WIN32
+            double t_diff = difftime(mktime(now_tm), mktime(&inner_it->timeStamp));
+            #endif
             if ((int)t_diff == 0) {
                 currentPositions.emplace(it.first, *inner_it);
                 _isAvailable_perSat = true;
-                std::cout << " EphData::getCurrent -- Found current SATPoint for " << it.first << std::endl;
+                std::cout << it.first << " ; ";
             }
 //            delete outdated satellite data
             if (!it.second.empty()) {
@@ -134,9 +139,10 @@ SATMap EphData::getCurrent()
         }
         if (!_isAvailable_perSat) {
             currentPositions.emplace(it.first, UNAVAILABLE_SAT_POSITION);
-//            std::cout << "EphData::getCurrent -- Set unavailable SAT " << it.first << std::endl;
+        //    std::cout << "EphData::getCurrent -- Set unavailable SAT " << it.first << std::endl;
         }
     }
+    std::cout << std::endl;
 //    std::cout << "EphData::getCurrent -- Got currentPositions" << std::endl;
     return currentPositions;
 }
@@ -156,10 +162,15 @@ void LazerOrientation::_setFromServo() {}
 void LazerOrientation::_setFromEph(std::string& satString)
 {
     SATMap satMap = ephData.getCurrent();
-//    azGrad = satMap.at(satString).azGrad;
-//    elGrad = satMap.at(satString).elGrad;
-    azGrad = 0;
-    elGrad = 0;
+    // try {
+        azGrad = satMap.at(satString).azGrad;
+        elGrad = satMap.at(satString).elGrad;
+    // } catch (const std::out_of_range& e) {
+    //     azGrad = 0;
+    //     elGrad = 0;
+    //     std::cout << "WARNING!!! NO SUCH SAT_NAME FOUND IN EPHEMERIS BASE !!!" << std::endl;
+    //     std::cout << "-------------LAZER: AZ = 0, EL = 0------------" << std::endl;
+    // }
 }
 
 std::pair<double, double> LazerOrientation::get(std::string& satString)
