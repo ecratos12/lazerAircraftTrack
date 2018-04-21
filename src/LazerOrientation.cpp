@@ -15,7 +15,9 @@ void EphData::fill()
     path p("./ephdata");
 #endif
 #ifdef _WIN32
-    path p(".\\ephdata");
+    boost::filesystem::path full_path(boost::filesystem::current_path());
+    std::cout << "Current path is : " << full_path << std::endl;
+    path p("..\\ephdata");
 #endif
 
     directory_iterator eod;
