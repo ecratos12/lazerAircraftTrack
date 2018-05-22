@@ -1,7 +1,7 @@
 #ifndef RADAR_H
 #define RADAR_H
 
-#define RADAR_UPDATE_DELAY_SEC  2
+#define RADAR_UPDATE_DELAY_SEC  1
 
 #include "SearchService.h"
 

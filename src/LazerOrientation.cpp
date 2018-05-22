@@ -112,7 +112,6 @@ SATMap EphData::getCurrent()
 
     SATMap currentPositions;
 
-    std::cout << " EphData::getCurrent -- Found current SATPoint for ";
     for (auto &it : _data)
     {
         _isAvailable_perSat = false;
@@ -127,7 +126,7 @@ SATMap EphData::getCurrent()
             if ((int)t_diff == 0) {
                 currentPositions.emplace(it.first, *inner_it);
                 _isAvailable_perSat = true;
-                std::cout << it.first << " ; ";
+                std::cout << " EphData::getCurrent -- Found current SATPoint " << it.first << std::endl;
             }
 //            delete outdated satellite data
             if (!it.second.empty()) {

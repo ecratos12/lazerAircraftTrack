@@ -28,36 +28,7 @@ def r2el(r):
 
 def d2r(theta):
     return theta*np.pi/180
-
-
-# def plot():
-#     r = np.arange(0, 90, 0.5)
-#     theta = r*9
-
-#     fig = plt.figure(figsize=(10,10))
-#     ax = fig.add_axes([0.1,0.1,0.8,0.8], polar=True)
-
-#     #ax = plt.subplot(111, projection='polar')
-#     ax.set_theta_zero_location('S')
-#     ax.set_theta_direction(-1)
-#     ax.set_rmax(90)
-#     ax.set_rticks(np.arange(0, 91, 10))  # less radial ticks
-#     ax.set_yticklabels(ax.get_yticks()[::-1])
-#     ax.set_rlabel_position(0)
-#     ax.grid(True)
-
-#     sat_positions = [["sat1", 30, 0], ["sat2", 60, 90], ["sat3", 30, 180], ["sat4", 50, 270]]
-#     for (PRN, E, Az) in sat_positions:
-#         ax.annotate(str(PRN),
-#                     xy=(radians(Az), r2el(E)),  # theta, radius
-#                     bbox=dict(boxstyle="circle", fc = 'red', alpha = 0.3),
-#                     horizontalalignment='center',
-#                     verticalalignment='center')
-#     ax.plot(d2r(theta), r2el(r))
-
-#     plt.show()
-#     plt.savefig('radar.png')
-
+    
 
 class mclass:
     def __init__(self,  window):

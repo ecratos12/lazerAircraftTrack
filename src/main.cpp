@@ -48,8 +48,6 @@ void on_connect(const boost::system::error_code &ec)
 
 int main(int argc, char* argv[])
 {
-//   try
-//   {
     // should specify the server, port and sattelite to track
     if (argc < 4)
     {
@@ -103,11 +101,6 @@ int main(int argc, char* argv[])
     radar.stop();
     search_service.stopTracking();
     service.stop();
-//   }
-//   catch (std::exception& e)
-//   {
-//     std::cerr << "Terminated by error : " << e.what() << std::endl;
-//   }
 
   return 0;
 }
